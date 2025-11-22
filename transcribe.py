@@ -13,6 +13,7 @@ from datetime import timedelta
 from pathlib import Path
 import json
 import shutil
+import re
 
 
 def setup_directories():
@@ -24,6 +25,54 @@ def setup_directories():
     output_dir.mkdir(exist_ok=True)
     
     return input_dir, output_dir
+
+
+def is_youtube_url(url):
+    """Check if the input is a valid YouTube URL"""
+    youtube_patterns = [
+        r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/',
+        r'(https?://)?(www\.)?youtu\.be/',
+    ]
+    return any(re.match(pattern, url) for pattern in youtube_patterns)
+
+
+def download_youtube_video(url, output_dir):
+    """
+    Download YouTube video using yt-dlp
+    
+    Args:
+        url: YouTube URL
+        output_dir: Directory to save the downloaded video
+    
+    Returns:
+        Path to the downloaded video file
+    """
+    try:
+        import yt_dlp
+        
+        print(f"Downloading video from YouTube: {url}")
+        
+        # Configure yt-dlp options
+        ydl_opts = {
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'outtmpl': str(output_dir / '%(title)s.%(ext)s'),
+            'quiet': False,
+            'no_warnings': False,
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+            
+        print(f"Video downloaded to: {filename}")
+        return Path(filename)
+        
+    except ImportError:
+        print("Error: yt-dlp not installed. Install with: pip install yt-dlp")
+        return None
+    except Exception as e:
+        print(f"Error downloading YouTube video: {e}")
+        return None
 
 
 def extract_audio(video_path, audio_path):
@@ -145,7 +194,7 @@ def main():
     )
     parser.add_argument(
         "video_path",
-        help="Path to the video file (can be in input/ folder or specify full path)"
+        help="Path to the video file or YouTube URL (can be in input/ folder or specify full path)"
     )
     parser.add_argument(
         "-m", "--model",
@@ -178,17 +227,25 @@ def main():
     # Setup directories
     input_dir, output_dir = setup_directories()
     
-    # Validate input video exists - check both relative path and input folder
-    video_path = Path(args.video_path)
-    if not video_path.exists():
-        # Try looking in input folder
-        alt_path = input_dir / args.video_path
-        if alt_path.exists():
-            video_path = alt_path
-        else:
-            print(f"Error: Video file '{args.video_path}' not found!")
-            print(f"Tip: Place videos in the 'input/' folder for automatic organization.")
+    # Check if input is a YouTube URL
+    if is_youtube_url(args.video_path):
+        print("YouTube URL detected. Downloading video...")
+        video_path = download_youtube_video(args.video_path, input_dir)
+        if video_path is None:
+            print("Failed to download YouTube video.")
             sys.exit(1)
+    else:
+        # Validate input video exists - check both relative path and input folder
+        video_path = Path(args.video_path)
+        if not video_path.exists():
+            # Try looking in input folder
+            alt_path = input_dir / args.video_path
+            if alt_path.exists():
+                video_path = alt_path
+            else:
+                print(f"Error: Video file '{args.video_path}' not found!")
+                print(f"Tip: Place videos in the 'input/' folder for automatic organization.")
+                sys.exit(1)
     
     # Create output folder for this video
     video_stem = video_path.stem
