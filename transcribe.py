@@ -200,8 +200,8 @@ def main():
     parser.add_argument(
         "-m", "--model",
         choices=["tiny", "base", "small", "medium", "large"],
-        default="medium",
-        help="Whisper model size (default: medium). Larger = more accurate but slower."
+        default="tiny",
+        help="Whisper model size (default: tiny). Larger = more accurate but slower."
     )
     parser.add_argument(
         "-l", "--language",
@@ -210,17 +210,17 @@ def main():
     parser.add_argument(
         "-f", "--format",
         choices=["txt", "json", "srt", "vtt", "all"],
-        default="txt",
-        help="Output format (default: txt). Use 'all' to generate all formats."
+        default="all",
+        help="Output format (default: all). Use 'all' to generate all formats."
     )
     parser.add_argument(
         "-o", "--output",
         help="Custom output file path. By default, creates organized output in output/<video_name>/"
     )
     parser.add_argument(
-        "--keep-audio",
+        "--delete-audio",
         action="store_true",
-        help="Keep extracted audio file in the output folder"
+        help="Delete extracted audio file after transcription (audio is kept by default)"
     )
     
     args = parser.parse_args()
@@ -302,15 +302,15 @@ def main():
         print(f"  Detected language: {result['language']}")
         print(f"  Processing time: {time_str}")
         print(f"  Output location: {video_output_dir}")
-        if args.keep_audio:
+        if not args.delete_audio:
             print(f"  Audio saved: {audio_path.name}")
         print(f"{'='*60}")
         
     finally:
-        # Cleanup audio file unless requested to keep it
-        if not args.keep_audio and audio_path.exists():
+        # Cleanup audio file only if explicitly requested
+        if args.delete_audio and audio_path.exists():
             os.remove(audio_path)
-            print(f"\nTemporary audio file removed.")
+            print(f"\nAudio file deleted.")
 
 
 if __name__ == "__main__":

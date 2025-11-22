@@ -83,7 +83,7 @@ The video will be automatically downloaded to the `input/` folder and transcribe
 
 ### Basic Usage
 
-Transcribe a video with default settings (medium model, text output):
+Transcribe a video with default settings (medium model, all formats, audio kept):
 
 ```bash
 # From YouTube URL
@@ -95,6 +95,11 @@ python transcribe.py input/video.mp4
 # Or from any path
 python transcribe.py /path/to/video.mp4
 ```
+
+By default, the script will:
+- Generate **all formats** (txt, json, srt, vtt)
+- **Keep the audio file** in the output folder
+- Use the **medium model**
 
 Output will be automatically organized in `output/video/` folder.
 
@@ -110,16 +115,16 @@ python transcribe.py input/video.mp4 -m small
 python transcribe.py input/video.mp4 -m large
 ```
 
-**Specify output format:**
+**Specify output format (only if you don't want all formats):**
 
 ```bash
-# JSON with timestamps
+# Only JSON with timestamps
 python transcribe.py input/video.mp4 -f json
 
-# SRT subtitle file
+# Only SRT subtitle file
 python transcribe.py input/video.mp4 -f srt
 
-# Generate ALL formats at once
+# Generate ALL formats (default)
 python transcribe.py input/video.mp4 -f all
 ```
 
@@ -129,10 +134,11 @@ python transcribe.py input/video.mp4 -f all
 python transcribe.py input/video.mp4 -l en
 ```
 
-**Keep extracted audio file:**
+**Delete audio file after transcription:**
 
 ```bash
-python transcribe.py input/video.mp4 --keep-audio
+# Audio is kept by default, use this flag to delete it
+python transcribe.py input/video.mp4 --delete-audio
 ```
 
 **Custom output path (overrides auto-organization):**
@@ -144,14 +150,20 @@ python transcribe.py input/video.mp4 -o custom/path/transcription.txt
 ### Complete Example
 
 ```bash
-# Generate all formats, keep audio, use English (local file)
-python transcribe.py input/my_video.mp4 -m medium -f all -l en --keep-audio
+# Basic usage (generates all formats, keeps audio)
+python transcribe.py input/my_video.mp4
 
-# Same with YouTube URL
-python transcribe.py "https://www.youtube.com/watch?v=VIDEO_ID" -m medium -f all -l en --keep-audio
+# With language specified for faster processing
+python transcribe.py input/my_video.mp4 -l en
+
+# Fast model with only text output, delete audio
+python transcribe.py input/my_video.mp4 -m small -f txt --delete-audio
+
+# YouTube video with all options
+python transcribe.py "https://www.youtube.com/watch?v=VIDEO_ID" -m medium -l en
 ```
 
-This creates:
+Default output creates:
 
 ```
 output/my_video/
