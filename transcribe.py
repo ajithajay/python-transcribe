@@ -29,11 +29,8 @@ def setup_directories():
 
 def is_youtube_url(url):
     """Check if the input is a valid YouTube URL"""
-    youtube_patterns = [
-        r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/',
-        r'(https?://)?(www\.)?youtu\.be/',
-    ]
-    return any(re.match(pattern, url) for pattern in youtube_patterns)
+    youtube_pattern = r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/'
+    return re.search(youtube_pattern, url) is not None
 
 
 def download_youtube_video(url, output_dir):
@@ -62,7 +59,11 @@ def download_youtube_video(url, output_dir):
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            filename = ydl.prepare_filename(info)
+            # Get the actual downloaded filename
+            if 'requested_downloads' in info and info['requested_downloads']:
+                filename = info['requested_downloads'][0].get('filepath')
+            else:
+                filename = ydl.prepare_filename(info)
             
         print(f"Video downloaded to: {filename}")
         return Path(filename)
