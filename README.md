@@ -5,6 +5,7 @@ A simple Python tool that transcribes video files locally using OpenAI's Whisper
 ## Features
 
 -   Extract audio from video files
+-   **YouTube URL support** - directly transcribe videos from YouTube
 -   Local transcription using Whisper (no API calls needed)
 -   Multiple output formats: text, JSON, SRT, VTT, or all at once
 -   Timestamp support for subtitles
@@ -56,6 +57,8 @@ pip install -r requirements.txt
 
 ### Quick Start
 
+**Option 1: Transcribe a local video file**
+
 1. **Place your video in the `input/` folder:**
 
 ```bash
@@ -70,11 +73,22 @@ python transcribe.py input/your_video.mp4
 
 3. **Find results in `output/your_video/`** - automatically organized!
 
+**Option 2: Transcribe from YouTube URL**
+
+```bash
+python transcribe.py "https://www.youtube.com/watch?v=VIDEO_ID"
+```
+
+The video will be automatically downloaded to the `input/` folder and transcribed!
+
 ### Basic Usage
 
 Transcribe a video with default settings (medium model, text output):
 
 ```bash
+# From YouTube URL
+python transcribe.py "https://www.youtube.com/watch?v=VIDEO_ID"
+
 # From input folder (recommended)
 python transcribe.py input/video.mp4
 
@@ -130,8 +144,11 @@ python transcribe.py input/video.mp4 -o custom/path/transcription.txt
 ### Complete Example
 
 ```bash
-# Generate all formats, keep audio, use English
+# Generate all formats, keep audio, use English (local file)
 python transcribe.py input/my_video.mp4 -m medium -f all -l en --keep-audio
+
+# Same with YouTube URL
+python transcribe.py "https://www.youtube.com/watch?v=VIDEO_ID" -m medium -f all -l en --keep-audio
 ```
 
 This creates:
